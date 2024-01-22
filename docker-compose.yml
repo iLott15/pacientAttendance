@@ -1,0 +1,81 @@
+#Iniciar os Containers do docker(Pode demorar um pouco na primeira vez):
+#docker-compose up -d
+
+#Pausar o Docker:
+#docker-compose down
+
+#Pausar o Docker para atualização de versão do banco de db_siged:
+#docker-compose down -v
+
+#Caso você enfrente o erro a seguir: Error response from daemon: image with reference system-www was found but does not match the specified platform: wanted linux/amd64, actual: linux/arm64/v8 
+  # DESCRIÇÃO DO ERRO (kernel linux encontrado não for compatível com o que está na "plataforma"(docker)), observe qual a ordem que está sendo mostrado as descrições do linux: 
+    # Se linux/amd64 - execute o código a seguir: export DOCKER_DEFAULT_PLATFORM=linux/arm64/v8
+    # Se linux/arm64/v8 - execute o código a seguir: export DOCKER_DEFAULT_PLATFORM=linux/amd64
+
+#Reconstruir Docker
+#docker-compose up -d --build --force-recreate --no-deps
+
+version: '3.3'
+networks:
+  banco:
+  web:
+volumes:
+  db_prototipo:
+services:
+  www:
+    build: ./docker/images/www/
+    mem_limit: 4096M
+    mem_reservation: 1024M
+    cpus: 0.5
+    restart: always
+    ports: 
+      - "4445:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - web
+      - banco
+  db:
+    build: ./docker/images/mysql/
+    mem_limit: 4096M
+    mem_reservation: 1024M
+    cpus: 0.5
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8 --collation-server=utf8_general_ci --sql_mode="" 
+    ports: 
+      - "3344:3344"
+    expose: 
+      - "3344"
+    environment:
+      MYSQL_DATABASE: prototipo
+      MYSQL_USER: prototipo
+      MYSQL_PASSWORD: key!prototipo
+      MYSQL_ROOT_PASSWORD: key!prototipo
+      MYSQL_TCP_PORT: 3344
+      TZ: America/Bahia
+    volumes:
+      - ./docker/dump/prototipo.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_prototipo:/var/lib/mysql
+    networks:
+      - banco
+  phpmyadmin:
+    build: ./docker/images/phpmyadmin/
+    mem_limit: 1024M
+    mem_reservation: 512M
+    cpus: 0.5
+    restart: always
+    ports: 
+      - "4446:80"
+    environment:
+      MYSQL_USER: prototipo
+      MYSQL_PASSWORD: key!prototipo
+      MYSQL_ROOT_PASSWORD: key!prototipo
+      PMA_HOST: db
+      PMA_PORT: 3344
+    depends_on:
+      - db
+    networks:
+      - banco
+      - web
