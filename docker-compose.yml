@@ -20,7 +20,7 @@ networks:
   banco:
   web:
 volumes:
-  db_prototipo:
+  db_pacient:
 services:
   www:
     build: ./docker/images/www/
@@ -29,7 +29,7 @@ services:
     cpus: 0.5
     restart: always
     ports: 
-      - "4445:80"
+      - "4447:80"
     volumes:
       - .:/var/www/html
     depends_on:
@@ -45,19 +45,19 @@ services:
     restart: always
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8 --collation-server=utf8_general_ci --sql_mode="" 
     ports: 
-      - "3344:3344"
+      - "3345:3345"
     expose: 
-      - "3344"
+      - "3345"
     environment:
-      MYSQL_DATABASE: prototipo
-      MYSQL_USER: prototipo
-      MYSQL_PASSWORD: key!prototipo
-      MYSQL_ROOT_PASSWORD: key!prototipo
-      MYSQL_TCP_PORT: 3344
+      MYSQL_DATABASE: pacient
+      MYSQL_USER: pacientAttendance
+      MYSQL_PASSWORD: key!pacient
+      MYSQL_ROOT_PASSWORD: key!pacient
+      MYSQL_TCP_PORT: 3345
       TZ: America/Bahia
     volumes:
-      - ./docker/dump/prototipo.sql:/docker-entrypoint-initdb.d/init.sql
-      - db_prototipo:/var/lib/mysql
+      - ./docker/dump/pacient.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_pacient:/var/lib/mysql
     networks:
       - banco
   phpmyadmin:
@@ -67,13 +67,13 @@ services:
     cpus: 0.5
     restart: always
     ports: 
-      - "4446:80"
+      - "4448:80"
     environment:
-      MYSQL_USER: prototipo
-      MYSQL_PASSWORD: key!prototipo
-      MYSQL_ROOT_PASSWORD: key!prototipo
+      MYSQL_USER: pacient
+      MYSQL_PASSWORD: key!pacient
+      MYSQL_ROOT_PASSWORD: key!pacient
       PMA_HOST: db
-      PMA_PORT: 3344
+      PMA_PORT: 3345
     depends_on:
       - db
     networks:
